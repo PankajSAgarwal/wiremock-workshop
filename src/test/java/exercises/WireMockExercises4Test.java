@@ -1,5 +1,6 @@
 package exercises;
 
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.specification.RequestSpecification;
@@ -21,7 +22,7 @@ public class WireMockExercises4Test {
 
     @RegisterExtension
     static WireMockExtension wiremock = WireMockExtension.newInstance()
-            .options(wireMockConfig().port(9876).globalTemplating(true))
+            .options(WireMockConfiguration.wireMockConfig().port(9876).globalTemplating(true))
             .build();
 
     @BeforeEach
@@ -46,7 +47,8 @@ public class WireMockExercises4Test {
          * The response templating transformer extension is
          * already active, so you don't need to do that yourself.
          ************************************************/
-
+        wiremock.stubFor(get(urlEqualTo("/echo-port"))
+                .willReturn(aResponse().withStatus(200).withBody("Listening on port {{request.port}}")));
     }
 
     public void setupStubExercise402() {
@@ -59,6 +61,11 @@ public class WireMockExercises4Test {
          * where <amount> is the value of the JSON element
          * loanDetails.amount extracted from the request body
          ************************************************/
+
+        wiremock.stubFor(post(urlEqualTo("/echo-loan-amount"))
+                .willReturn(aResponse().withStatus(200)
+                        .withBody("Received loan application request for ${{jsonPath request.body '$.loanDetails.amount'}}"))
+        );
 
     }
 
